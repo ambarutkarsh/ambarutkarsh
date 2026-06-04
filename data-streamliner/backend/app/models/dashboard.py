@@ -1,9 +1,8 @@
-from datetime import datetime
-from typing import Optional, Any
-from sqlalchemy import String, Boolean, DateTime, Integer, Enum as SAEnum, func, Text, JSON, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, JSON, Enum, ForeignKey, Text
+from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
+from ..core.database import Base
 import enum
-from app.core.database import Base
 
 
 class DashboardStatus(str, enum.Enum):
@@ -14,24 +13,16 @@ class DashboardStatus(str, enum.Enum):
 class Dashboard(Base):
     __tablename__ = "dashboards"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-
-    layout: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
-    filters: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
-
-    status: Mapped[DashboardStatus] = mapped_column(
-        SAEnum(DashboardStatus), default=DashboardStatus.draft, nullable=False
-    )
-
-    created_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
-    )
-
-    allowed_roles: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False)
+    description = Column(String(1000))
+    layout = Column(JSON, default=dict)
+    filters = Column(JSON, default=dict)
+    status = Column(Enum(DashboardStatus), nullable=False, default=DashboardStatus.draft)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    allowed_roles = Column(JSON, default=list)
 
     widgets = relationship("DashboardWidget", back_populates="dashboard", cascade="all, delete-orphan")
 
@@ -39,15 +30,11 @@ class Dashboard(Base):
 class DashboardWidget(Base):
     __tablename__ = "dashboard_widgets"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    dashboard_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("dashboards.id", ondelete="CASCADE"), nullable=False
-    )
-    report_id: Mapped[int] = mapped_column(Integer, ForeignKey("reports.id"), nullable=False)
-
-    position: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
-    title: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    widget_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    id = Column(Integer, primary_key=True, index=True)
+    dashboard_id = Column(Integer, ForeignKey("dashboards.id", ondelete="CASCADE"), nullable=False)
+    report_id = Column(Integer, ForeignKey("reports.id"), nullable=True)
+    position = Column(JSON, default=dict)  # {x, y, w, h}
+    title = Column(String(255))
+    widget_type = Column(String(100), default="chart")
 
     dashboard = relationship("Dashboard", back_populates="widgets")
-    report = relationship("Report", foreign_keys=[report_id])

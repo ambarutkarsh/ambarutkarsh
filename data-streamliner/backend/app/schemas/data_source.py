@@ -1,7 +1,7 @@
-from datetime import datetime
+from pydantic import BaseModel, Field
 from typing import Optional
-from pydantic import BaseModel
-from app.models.data_source import DbType
+from datetime import datetime
+from ..models.data_source import DbType
 
 
 class DataSourceBase(BaseModel):
@@ -13,14 +13,14 @@ class DataSourceBase(BaseModel):
     database_name: str
     schema_name: Optional[str] = None
     username: str
-    ssl_mode: Optional[str] = None
-    connection_timeout: int = 10
+    ssl_mode: str = "disable"
+    connection_timeout: int = 30
     query_timeout: int = 30
     is_active: bool = True
 
 
 class DataSourceCreate(DataSourceBase):
-    password: str
+    password: str = Field(description="Plain text password, will be encrypted")
 
 
 class DataSourceUpdate(BaseModel):
@@ -38,16 +38,17 @@ class DataSourceUpdate(BaseModel):
     is_active: Optional[bool] = None
 
 
-class DataSourceResponse(DataSourceBase):
+class DataSourceOut(DataSourceBase):
     id: int
     created_by: Optional[int] = None
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
-    model_config = {"from_attributes": True}
+    class Config:
+        from_attributes = True
 
 
 class ConnectionTestResult(BaseModel):
     success: bool
     message: str
-    latency_ms: Optional[int] = None
+    latency_ms: Optional[float] = None

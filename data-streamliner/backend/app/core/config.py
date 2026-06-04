@@ -1,33 +1,36 @@
 from pydantic_settings import BaseSettings
+from pydantic import Field
 from typing import Optional
+import os
 
 
 class Settings(BaseSettings):
-    APP_ENV: str = "development"
-    APP_PORT: int = 8000
+    APP_ENV: str = Field(default="development")
+    APP_PORT: int = Field(default=8000)
+    SECRET_KEY: str = Field(default="change-this-to-a-random-64-char-string")
+    ALGORITHM: str = Field(default="HS256")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=480)
+
+    CONFIG_DB_HOST: str = Field(default="postgres")
+    CONFIG_DB_PORT: int = Field(default=5432)
+    CONFIG_DB_NAME: str = Field(default="streamliner_config")
+    CONFIG_DB_USER: str = Field(default="streamliner")
+    CONFIG_DB_PASSWORD: str = Field(default="change-this-password")
+
+    ENCRYPTION_KEY: str = Field(default="change-this-to-a-random-32-char-key-!")
+
+    REDIS_URL: str = Field(default="redis://redis:6379")
+    CACHE_ENABLED: bool = Field(default=True)
+    CACHE_TTL: int = Field(default=300)
+
+    MAX_QUERY_ROWS: int = Field(default=10000)
+    MAX_EXPORT_ROWS: int = Field(default=100000)
+    QUERY_TIMEOUT: int = Field(default=30)
+
+    LOG_LEVEL: str = Field(default="INFO")
+
     APP_VERSION: str = "1.0.0"
-
-    SECRET_KEY: str = "change-this-to-a-random-64-char-string"
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 480
-
-    CONFIG_DB_HOST: str = "postgres"
-    CONFIG_DB_PORT: int = 5432
-    CONFIG_DB_NAME: str = "streamliner_config"
-    CONFIG_DB_USER: str = "streamliner"
-    CONFIG_DB_PASSWORD: str = "change-this-password"
-
-    ENCRYPTION_KEY: str = "change-this-to-a-random-32-char-k"
-
-    REDIS_URL: str = "redis://redis:6379"
-    CACHE_ENABLED: bool = True
-    CACHE_TTL: int = 300
-
-    MAX_QUERY_ROWS: int = 10000
-    MAX_EXPORT_ROWS: int = 100000
-    QUERY_TIMEOUT: int = 30
-
-    LOG_LEVEL: str = "INFO"
+    APP_NAME: str = "Star Health Data Streamliner"
 
     @property
     def DATABASE_URL(self) -> str:
@@ -46,6 +49,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "ignore"
 
 
 settings = Settings()

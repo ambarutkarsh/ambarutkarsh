@@ -1,9 +1,8 @@
-from datetime import datetime
-from typing import Optional, Any
-from sqlalchemy import String, Boolean, DateTime, Integer, Enum as SAEnum, func, Text, JSON, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, JSON, Enum, ForeignKey, Text
+from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
+from ..core.database import Base
 import enum
-from app.core.database import Base
 
 
 class SourceType(str, enum.Enum):
@@ -50,24 +49,19 @@ class AggregationType(str, enum.Enum):
 class Dataset(Base):
     __tablename__ = "datasets"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-
-    data_source_id: Mapped[int] = mapped_column(Integer, ForeignKey("data_sources.id"), nullable=False)
-    source_type: Mapped[SourceType] = mapped_column(SAEnum(SourceType), nullable=False)
-    source_config: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
-    default_filters: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
-
-    status: Mapped[DatasetStatus] = mapped_column(SAEnum(DatasetStatus), default=DatasetStatus.draft, nullable=False)
-    version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
-
-    created_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
-    )
-    published_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(255), nullable=False)
+    description = Column(String(1000))
+    data_source_id = Column(Integer, ForeignKey("data_sources.id"), nullable=False)
+    source_type = Column(Enum(SourceType), nullable=False, default=SourceType.table)
+    source_config = Column(JSON)  # tables, joins, or raw SQL
+    default_filters = Column(JSON, default=dict)
+    status = Column(Enum(DatasetStatus), nullable=False, default=DatasetStatus.draft)
+    version = Column(Integer, default=1)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    published_at = Column(DateTime(timezone=True), nullable=True)
 
     fields = relationship("DatasetField", back_populates="dataset", cascade="all, delete-orphan")
     data_source = relationship("DataSource", foreign_keys=[data_source_id])
@@ -76,27 +70,21 @@ class Dataset(Base):
 class DatasetField(Base):
     __tablename__ = "dataset_fields"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    dataset_id: Mapped[int] = mapped_column(Integer, ForeignKey("datasets.id", ondelete="CASCADE"), nullable=False)
-
-    source_column: Mapped[str] = mapped_column(String(255), nullable=False)
-    business_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-
-    field_type: Mapped[FieldType] = mapped_column(SAEnum(FieldType), nullable=False)
-    data_type: Mapped[DataType] = mapped_column(SAEnum(DataType), nullable=False)
-    aggregation_type: Mapped[AggregationType] = mapped_column(
-        SAEnum(AggregationType), default=AggregationType.none, nullable=False
-    )
-    formula: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    format_string: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    decimal_places: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-
-    is_visible: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    is_filterable: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    is_exportable: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    is_pii: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-
-    sort_order: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    dataset_id = Column(Integer, ForeignKey("datasets.id", ondelete="CASCADE"), nullable=False)
+    source_column = Column(String(255), nullable=False)
+    business_name = Column(String(255), nullable=False)
+    description = Column(String(500))
+    field_type = Column(Enum(FieldType), nullable=False, default=FieldType.attribute)
+    data_type = Column(Enum(DataType), nullable=False, default=DataType.string)
+    aggregation_type = Column(Enum(AggregationType), nullable=False, default=AggregationType.none)
+    formula = Column(Text, nullable=True)
+    format_string = Column(String(100))
+    decimal_places = Column(Integer, default=2)
+    is_visible = Column(Boolean, default=True)
+    is_filterable = Column(Boolean, default=True)
+    is_exportable = Column(Boolean, default=True)
+    is_pii = Column(Boolean, default=False)
+    sort_order = Column(Integer, default=0)
 
     dataset = relationship("Dataset", back_populates="fields")
