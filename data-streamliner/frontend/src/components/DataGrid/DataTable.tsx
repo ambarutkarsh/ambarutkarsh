@@ -107,8 +107,6 @@ export default function DataTable({ columns, rows, rowCount, reportId, onExport,
           paginationPageSize={25}
           quickFilterText={quickFilter}
           onGridReady={onGridReady}
-          animateRows
-          suppressMenuHide
           domLayout="normal"
         />
       </Box>
