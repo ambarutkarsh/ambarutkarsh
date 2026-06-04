@@ -1,0 +1,214 @@
+name: Build Desktop Apps
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-mac:
+    name: Build macOS (.dmg)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/bold-cori-GOqfa
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: data-streamliner/frontend/package-lock.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build React frontend
+        working-directory: data-streamliner/frontend
+        run: |
+          npm ci
+          BUILD_TARGET=desktop npm run build
+
+      - name: Copy frontend build to backend/static
+        working-directory: data-streamliner
+        run: |
+          rm -rf backend/static
+          cp -r frontend/dist backend/static
+
+      - name: Install Python dependencies
+        working-directory: data-streamliner/backend
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-desktop.txt
+          pip install pyinstaller
+
+      - name: Build with PyInstaller
+        working-directory: data-streamliner
+        run: |
+          pyinstaller desktop/DataStreamliner.spec \
+            --distpath dist/desktop \
+            --workpath build/pyinstaller \
+            --clean
+
+      - name: Create DMG
+        working-directory: data-streamliner
+        run: |
+          brew install create-dmg
+          create-dmg \
+            --volname "Data Streamliner" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --app-drop-link 450 185 \
+            "dist/DataStreamliner-mac.dmg" \
+            "dist/desktop/DataStreamliner.app"
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DataStreamliner-mac
+          path: data-streamliner/dist/DataStreamliner-mac.dmg
+          retention-days: 30
+
+  build-windows:
+    name: Build Windows (.exe installer)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/bold-cori-GOqfa
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: data-streamliner/frontend/package-lock.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build React frontend
+        working-directory: data-streamliner/frontend
+        run: |
+          npm ci
+          $env:BUILD_TARGET="desktop"; npm run build
+
+      - name: Copy frontend build to backend/static
+        working-directory: data-streamliner
+        shell: powershell
+        run: |
+          if (Test-Path backend\static) { Remove-Item -Recurse -Force backend\static }
+          Copy-Item -Recurse frontend\dist backend\static
+
+      - name: Install Python dependencies
+        working-directory: data-streamliner/backend
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-desktop.txt
+          pip install pyinstaller
+
+      - name: Build with PyInstaller
+        working-directory: data-streamliner
+        run: |
+          pyinstaller desktop\DataStreamliner.spec `
+            --distpath dist\desktop `
+            --workpath build\pyinstaller `
+            --clean
+
+      - name: Install NSIS
+        run: choco install nsis -y
+
+      - name: Create NSIS installer script
+        working-directory: data-streamliner
+        shell: powershell
+        run: |
+          $nsis = @"
+          !define APPNAME "Data Streamliner"
+          !define APPVERSION "1.0.0"
+          !define INSTALLDIR "$PROGRAMFILES64\DataStreamliner"
+
+          Name `"`${APPNAME}`"
+          OutFile "dist\DataStreamliner-Setup-Windows.exe"
+          InstallDir `"`${INSTALLDIR}`"
+          RequestExecutionLevel admin
+
+          Section "Install"
+            SetOutPath `"`${INSTALLDIR}`"
+            File "dist\desktop\DataStreamliner.exe"
+            CreateShortcut "$DESKTOP\Data Streamliner.lnk" "`${INSTALLDIR}\DataStreamliner.exe"
+            CreateShortcut "$SMPROGRAMS\Data Streamliner.lnk" "`${INSTALLDIR}\DataStreamliner.exe"
+            WriteUninstaller `"`${INSTALLDIR}\Uninstall.exe`"
+          SectionEnd
+
+          Section "Uninstall"
+            Delete `"`${INSTALLDIR}\DataStreamliner.exe`"
+            Delete `"`${INSTALLDIR}\Uninstall.exe`"
+            RMDir `"`${INSTALLDIR}`"
+            Delete "$DESKTOP\Data Streamliner.lnk"
+            Delete "$SMPROGRAMS\Data Streamliner.lnk"
+          SectionEnd
+          "@
+          $nsis | Out-File -FilePath installer.nsi -Encoding UTF8
+
+      - name: Build NSIS installer
+        working-directory: data-streamliner
+        run: makensis installer.nsi
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DataStreamliner-windows
+          path: data-streamliner/dist/DataStreamliner-Setup-Windows.exe
+          retention-days: 30
+
+  release:
+    name: Create GitHub Release
+    needs: [build-mac, build-windows]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: DataStreamliner-mac
+          path: artifacts/
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: DataStreamliner-windows
+          path: artifacts/
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Data Streamliner ${{ github.ref_name }}"
+          body: |
+            ## Data Streamliner ${{ github.ref_name }}
+
+            ### Installation
+
+            **macOS**: Download `DataStreamliner-mac.dmg`, open it, drag to Applications.
+
+            **Windows**: Download `DataStreamliner-Setup-Windows.exe`, run as administrator.
+
+            ### First Login
+            - URL: `http://localhost:8000` (opens automatically)
+            - Username: `admin`
+            - Password: `Admin@123`
+            - Change password on first login.
+
+            ### What's included
+            - Self-contained analytics platform
+            - SQLite config database (no setup required)
+            - Connects to your PostgreSQL / MySQL / SQL Server databases
+          files: artifacts/*
+          draft: false
+          prerelease: false
