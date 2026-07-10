@@ -1,0 +1,48 @@
+[project]
+name = "renewassist"
+version = "0.1.0"
+description = "On-premise, IRDAI-compliant health insurance renewal chatbot (hybrid RAG + graph + scoped context + LoRA)"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi==0.139.0",
+    "pydantic==2.13.4",
+    "httpx==0.28.1",
+    "uvicorn==0.51.0",
+]
+
+# GPU/serving/data-tier dependencies (vllm, qdrant-client, neo4j, redis, psycopg,
+# nemoguardrails, guardrails-ai, llm-guard, ragas, deepeval, peft) are added in
+# Phases 1-4 with exact pins verified against "Facts to Verify" in the build doc.
+# They are intentionally NOT listed yet: nothing in the current codebase imports them.
+
+[dependency-groups]
+dev = [
+    "pytest==9.1.1",
+    "pytest-asyncio==1.4.0",
+    "ruff==0.15.21",
+    "mypy==2.2.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["app", "ingestion"]
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+no_implicit_optional = true

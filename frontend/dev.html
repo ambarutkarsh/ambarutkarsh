@@ -1,0 +1,52 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>RenewAssist dev console</title>
+<style>
+  body { font: 15px/1.5 system-ui, sans-serif; max-width: 640px; margin: 2rem auto; }
+  #log { border: 1px solid #ccc; border-radius: 8px; padding: 1rem; min-height: 240px; }
+  .user { text-align: right; color: #1a4f8b; margin: .4rem 0; }
+  .bot { text-align: left; margin: .4rem 0; }
+  .meta { font-size: 12px; color: #777; }
+  form { display: flex; gap: .5rem; margin-top: 1rem; }
+  input { flex: 1; padding: .5rem; }
+</style>
+<h1>RenewAssist <small class="meta">dev smoke page, not the production widget</small></h1>
+<div id="log" role="log" aria-live="polite"></div>
+<form id="f">
+  <input id="m" autocomplete="off" placeholder="Ask about your renewal..." aria-label="Message">
+  <button>Send</button>
+</form>
+<script>
+  const sessionId = crypto.randomUUID();
+  const log = document.getElementById("log");
+  document.getElementById("f").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const input = document.getElementById("m");
+    const message = input.value.trim();
+    if (!message) return;
+    input.value = "";
+    log.insertAdjacentHTML("beforeend", `<div class="user">${escapeHtml(message)}</div>`);
+    const res = await fetch("http://localhost:8000/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        session_id: sessionId,
+        policy_context_token: "ref-demo-policy",
+        message,
+      }),
+    });
+    const data = await res.json();
+    const cites = (data.citations || [])
+      .map((c) => c.clause || c.field || c.path).filter(Boolean).join(", ");
+    log.insertAdjacentHTML(
+      "beforeend",
+      `<div class="bot">${escapeHtml(data.reply)}<div class="meta">intent ${data.intent.name}` +
+        ` | faithfulness ${data.validation.faithfulness}` +
+        (cites ? ` | sources: ${escapeHtml(cites)}` : "") + `</div></div>`
+    );
+    log.scrollTop = log.scrollHeight;
+  });
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+  }
+</script>

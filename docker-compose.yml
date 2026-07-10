@@ -1,0 +1,76 @@
+# RenewAssist deployment skeleton (build doc Section 22).
+# Data tier runs anywhere; GPU services are gated behind the "gpu" profile.
+# Exact image pins are finalized in Phase 7 against "Facts to Verify".
+
+services:
+  orchestrator:
+    build: .
+    command: uvicorn app.api.routes:create_app --factory --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      HANDOFF_PROVIDER: ${HANDOFF_PROVIDER:-null}
+    depends_on:
+      - redis
+      - postgres
+      - qdrant
+      - neo4j
+
+  qdrant:
+    image: qdrant/qdrant:v1.15.1   # verify exact 1.15.x pin at Phase 7
+    volumes:
+      - qdrant_data:/qdrant/storage
+    ports:
+      - "6333:6333"
+
+  neo4j:
+    image: neo4j:5-community        # verify exact 5.x pin at Phase 7
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-changeme-in-env}
+    volumes:
+      - neo4j_data:/data
+    ports:
+      - "7687:7687"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: renewassist
+      POSTGRES_USER: renewassist
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme-in-env}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  vllm:
+    profiles: ["gpu"]
+    image: vllm/vllm-openai:latest  # pin exact version at Phase 3 (Facts to Verify)
+    command: >
+      --model Qwen/Qwen3-32B-FP8
+      --gpu-memory-utilization 0.9
+      --max-model-len 32768
+      --enable-lora
+      --lora-modules renewassist-tone-intent=/models/adapters/renewassist
+    volumes:
+      - models:/models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    ports:
+      - "8001:8000"
+
+volumes:
+  qdrant_data:
+  neo4j_data:
+  pg_data:
+  models:

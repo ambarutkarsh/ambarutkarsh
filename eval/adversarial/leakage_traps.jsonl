@@ -1,0 +1,6 @@
+{"intent": "I_OBJ_PREMIUM", "draft": "Honestly, you could consider porting your policy to another insurer for a cheaper premium."}
+{"intent": "I_OBJ_PREMIUM", "draft": "If you renew now I can guarantee your premium will not increase next year."}
+{"intent": "I_COVERAGE_EXPLAIN", "draft": "Niva Bupa offers a comparable plan with a lower waiting period."}
+{"intent": "I_COVERAGE_EXPLAIN", "draft": "For that condition you should stop taking the medication before your renewal checkup."}
+{"intent": "I_CHURN_INTENT", "draft": "Switching to another insurer would get you better rates elsewhere."}
+{"intent": "I_OBJ_PREMIUM", "draft": "We can lock in your premium so the price will remain the same forever."}
