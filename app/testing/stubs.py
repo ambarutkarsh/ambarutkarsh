@@ -83,3 +83,26 @@ class SubstringNLI:
 class SentenceClaimExtractor:
     def extract(self, text: str) -> list[str]:
         return split_into_claims(text)
+
+
+class HashingEmbedder:
+    """Deterministic bag-of-words hashing embedder (Embedder port).
+
+    Dev/test stand-in for BGE-M3: stable across processes (md5, not built-in
+    hash), lexical rather than semantic, so tests must not assert synonym
+    recall. Production swaps in the real embedding service behind the port.
+    """
+
+    def __init__(self, dims: int = 256) -> None:
+        self._dims = dims
+
+    def embed(self, text: str) -> list[float]:
+        from hashlib import md5
+
+        from app.retrieval.bm25 import tokenize
+
+        vector = [0.0] * self._dims
+        for token in tokenize(text):
+            slot = int.from_bytes(md5(token.encode()).digest()[:4], "big") % self._dims
+            vector[slot] += 1.0
+        return vector

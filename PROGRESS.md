@@ -1,8 +1,32 @@
 # RenewAssist Progress Ledger
 
 ## Current phase
-Phase 0 (scaffolding) COMPLETE, tagged `phase-0`. Several deterministic vertical slices
-of later phases are already in place behind ports (see below). Next phase: Phase 1.
+Phase 1 (ingestion, retrieval, graph, golden set) IN PROGRESS. Phase 0 complete,
+tagged `phase-0` (tag exists locally; remote rejects tag pushes with 403, so the
+tag must be pushed with owner credentials or created via the GitHub UI).
+
+## Phase 1 done so far
+- Okapi BM25 index (`app/retrieval/bm25.py`), pure Python, payload-carrying.
+- Dense leg: `Embedder` port + in-memory vector store (`app/retrieval/vectors.py`);
+  production swaps in BGE-M3 + Qdrant behind the same contract.
+- `HybridRetriever` (`app/retrieval/hybrid.py`) implementing the orchestrator's
+  Retriever port: BM25 + dense fused via weighted RRF, product-scope filtering,
+  `Reranker` port (identity now, BGE-reranker-v2-m3 later). Item score is the dense
+  cosine, calibrated against the pipeline's GROUNDING_SCORE_THRESHOLD, so junk
+  queries fall below the refusal line instead of being normalized up.
+- Ingestion index builder (`ingestion/index.py`): SourceDoc -> header-aware chunks ->
+  BM25 + vectors + metadata catalog (product, clause, version, effective_date).
+- In-memory policy graph store + `StoreGraphQuerier` (`app/graph/store.py`):
+  cycle-safe multi-hop traversal, intent -> node-type routing, facts carry the
+  provenance of the edge that produced them.
+- Tests: `tests/retrieval/` (BM25, hybrid mechanics + recall floor on synthetic
+  corpus), `tests/graph/` (ontology + store + querier).
+
+## Phase 1 remaining (needs infra/SME, not codeable here)
+- Real BGE-M3 embeddings + Qdrant client + BGE reranker behind the existing ports.
+- Neo4j-backed store + extraction from real policy wordings with provenance.
+- Golden dataset (200+ SME-reviewed pairs) and the formal Recall@10 >= 0.80 /
+  hybrid-beats-dense-on-nDCG gates measured against it.
 
 ## Done
 - Repo tree per build doc Section 19; CLAUDE.md working agreement; Makefile
@@ -34,16 +58,16 @@ of later phases are already in place behind ports (see below). Next phase: Phase
   (injection, portability bait, irate, non-English, leakage traps) wired into tests.
 - Frontend: dev smoke page (`frontend/dev.html`) + Phase 5 spec README.
 
-## Last passing test run (2026-07-10)
+## Last passing test run (2026-07-24)
 ```
 $ make check
 uv run ruff check .   -> All checks passed!
-uv run mypy           -> Success: no issues found in 45 source files
-uv run pytest -q      -> 77 passed, 1 warning in 1.08s
+uv run mypy           -> Success: no issues found in 50 source files
+uv run pytest -q      -> 95 passed, 1 warning in 0.52s
 ```
 
 ## In progress
-- Nothing mid-flight; working tree clean at the phase boundary.
+- Phase 1 offline slices landed (see above); infra-bound work listed as remaining.
 
 ## Blocked / decisions needed
 - Golden dataset SME owner must be named before Phase 1 gates can be met.
