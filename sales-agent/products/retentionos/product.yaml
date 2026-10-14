@@ -1,0 +1,53 @@
+# RetentionOS. Lines marked TODO must be filled in before Closer will send anything.
+name: RetentionOS
+
+sender:
+  name: Ambar Utkarsh
+  title: Founder
+  email: TODO@your-sending-domain.com   # TODO: a mailbox on a separate sending domain
+
+pitch: >
+  RetentionOS helps health insurers keep members at renewal. It predicts which policies
+  are likely to lapse or not renew 60-90 days ahead, explains why for each member, and
+  drives the outreach (agents, brokers, member messages) that saves them.
+
+offer:
+  entry: A free renewal-leakage diagnostic on a sample of their lapsed policies
+  main: Annual RetentionOS platform license, starting with a pilot on one product line
+  goal: Book a 20-minute call
+  booking_url: ""        # TODO (optional): your Calendly or Google booking link
+
+audience:
+  who: >
+    Executives who own renewal and persistency numbers at health insurance companies,
+    health plans, HMOs and health-insurance TPAs, anywhere in the world.
+  organisation_types: [health insurer, health plan, HMO, medical insurance company, health insurance TPA]
+  titles: [Chief Customer Officer, Head of Retention, Head of Renewals, Head of Persistency,
+           VP Customer Retention, Chief Distribution Officer, Head of Customer Experience,
+           Chief Operating Officer, Chief Marketing Officer]
+  countries: [India, United States, United Kingdom, United Arab Emirates, Saudi Arabia, Singapore,
+              Indonesia, Malaysia, Philippines, Australia, South Africa, Kenya, Nigeria, Germany, Netherlands]
+  avoid:
+    - hospitals, clinics and brokers without their own book of policies
+    - life, motor or property insurers with no health line
+    - companies with fewer than about 200 employees
+
+research:
+  per_run: 8
+  runs_per_day: 1
+  where_to_look: >
+    insurer leadership/management pages, annual reports, regulator persistency or renewal
+    disclosures (e.g. IRDAI in India), insurance trade press (Insurance Asia, Insurance Business,
+    Reinsurance News, Health Payer Specialist), conference speaker lists, job posts for retention roles
+
+sending:
+  daily_limit: 25
+  follow_up_days: [3, 7]
+  require_approval: true      # every email waits for you in the outbox
+  send_to_catch_all: false
+  timezone: Asia/Kolkata      # TODO: your timezone
+  quiet_hours: {start: "20:00", end: "08:00"}
+
+footer: |
+  TODO: Company legal name, postal address
+  Not relevant to you? Reply "unsubscribe" and I won't email again.

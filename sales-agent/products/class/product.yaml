@@ -1,0 +1,64 @@
+# Class. Lines marked TODO must be filled in before Closer will send anything.
+#
+# Cold email goes to the people who can bring many learners at once (university placement
+# and career teams, product clubs and communities, L&D leaders) and to individuals who
+# publicly invite contact. That reaches far more students and professionals than writing to
+# individuals' work inboxes, and it stays on the right side of anti-spam law.
+name: "Class: AI Product Management"
+
+sender:
+  name: Ambar Utkarsh
+  title: Founder and Instructor
+  email: TODO@your-sending-domain.com   # TODO
+
+pitch: >
+  Class is a 6-month AI Product Management course taught by Ambar Utkarsh for students and
+  professionals moving into AI PM roles. Class Pro gives lifetime access to every course
+  artifact (AI PRDs, evaluation plans, model-selection and launch templates, case studies)
+  for 5,000.
+
+offer:
+  entry: "Class Pro: all course artifacts for 5,000, or a free sample artifact first"   # TODO: add currency (INR? USD?)
+  main: The 6-month AI Product Management course, taught by Ambar   # TODO: add price if you want it mentioned
+  goal: >
+    For institutions and communities: a short call about offering Class or a free AI PM session
+    to their members. For individuals: a reply.
+  booking_url: ""        # TODO (optional): course page or booking link
+
+audience:
+  who: >
+    People who can bring groups of aspiring AI product managers: university and business-school
+    placement/career-services heads, student product and consulting clubs, PM communities and
+    meetup organisers, L&D and talent leaders at tech, IT-services and consulting firms that are
+    building AI products. Also individuals who publicly say they want to move into AI product
+    management and publish a contact email.
+  organisation_types: [university or business school, student product club, product management community,
+                       tech company, IT services firm, consulting firm, fintech]
+  titles: [Head of Placements, Career Services Director, Corporate Relations Manager, Product Club President,
+           Community Organiser, Head of Learning and Development, Talent Development Lead, Chief People Officer]
+  countries: [India, United States, United Arab Emirates, Singapore]
+  avoid:
+    - people under 18
+    - senior AI product leaders (Director and above in AI/ML product) as learners
+    - individuals who have not published a contact email
+    - the UK, EU and Canada for individuals (stricter consent rules for cold email to people)
+
+research:
+  per_run: 8
+  runs_per_day: 1
+  where_to_look: >
+    university placement/career-services pages, business-school corporate relations pages,
+    student club pages, product meetup and community organiser pages, company L&D leadership pages,
+    personal blogs and newsletters about moving into AI product management
+
+sending:
+  daily_limit: 25
+  follow_up_days: [4]
+  require_approval: true
+  send_to_catch_all: false
+  timezone: Asia/Kolkata      # TODO
+  quiet_hours: {start: "20:00", end: "08:00"}
+
+footer: |
+  TODO: your name or business name, postal address
+  Not relevant to you? Reply "unsubscribe" and I won't email again.
