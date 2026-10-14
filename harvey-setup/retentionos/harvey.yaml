@@ -1,0 +1,92 @@
+# Harvey config for RetentionOS. install.sh copies this into its own Harvey checkout.
+# Lines marked TODO need your real values before Harvey sends anything.
+
+persona:
+  name: "Ambar Utkarsh"
+  company: "RetentionOS"
+  role: "Founder"
+  email: "ambar@YOUR-SENDING-DOMAIN.com"     # TODO: mailbox on a dedicated sending domain
+  linkedin: "linkedin.com/in/YOUR-HANDLE"     # TODO
+  tone: "consultative, data-driven, concise; speaks the language of insurance renewals and persistency"
+
+product:
+  name: "RetentionOS"
+  description: "A retention operating system for health insurers that predicts which policies are at risk of lapsing before renewal and runs the outreach that saves them."
+  pricing: "Annual platform license sized to policies under management; pilot available"   # TODO: confirm
+  key_benefits:
+    - "Flags at-risk policies 60-90 days before renewal instead of after they lapse"
+    - "Lifts renewal and persistency rates without adding headcount to the retention team"
+    - "Gives agents, brokers and call centres one prioritised save list with the reason each member is at risk"
+    - "Measures which save actions actually work, per segment and channel"
+  objection_responses:
+    "too expensive": "Fair. Most insurers lose more premium from a single point of renewal-rate decline than the cost of a year of RetentionOS. A pilot on one product line shows the number before you commit."
+    "already have a solution": "Makes sense; most carriers have a CRM and some lapse reporting. The gap we usually see is prediction early enough to act. What does your team see today, and how early?"
+    "not interested": "No problem. Out of curiosity, is renewal rate a priority this year, or is the focus elsewhere?"
+    "we build this in-house": "Many teams do have the data science. What we add is the playbook and outreach layer that turns a risk score into saved policies. Happy to compare notes."
+    "data privacy / compliance": "Understood; health data is sensitive. We can run on de-identified policy data for the pilot and follow your data residency requirements."
+  offer:
+    primary: "Annual RetentionOS platform license"
+    entry: "Free renewal-leakage diagnostic on a sample of your lapsed policies"
+    goal: "book_call"
+    booking_method: "ask_preference"   # switch to calendar_link once booking_url is set
+    booking_url: ""                    # TODO: e.g. your Calendly link
+    meeting_duration: "20 minutes"
+    meeting_owner: "Ambar Utkarsh"
+
+icp:
+  industries:
+    - "Health Insurance"
+    - "Health Plans"
+    - "Medical Insurance"
+    - "Health Maintenance Organization"
+    - "Insurance Third Party Administrator"
+  company_size: "200-50,000 employees"
+  titles:
+    - "Chief Customer Officer"
+    - "Head of Retention"
+    - "Head of Renewals"
+    - "VP Customer Retention"
+    - "Head of Persistency"
+    - "Chief Distribution Officer"
+    - "Head of Customer Experience"
+    - "Chief Operating Officer"
+    - "Chief Marketing Officer"
+  geography:
+    - "India"
+    - "United States"
+    - "United Kingdom"
+    - "United Arab Emirates"
+    - "Saudi Arabia"
+    - "Singapore"
+    - "Indonesia"
+    - "Australia"
+    - "South Africa"
+    - "Germany"
+    - "Netherlands"
+  hiring_signals:
+    - "Head of Retention"
+    - "Retention Manager"
+    - "Renewals Manager"
+    - "Persistency Manager"
+    - "Customer Lifecycle Manager"
+
+channels:
+  email:
+    enabled: true
+    provider: "gmail"
+    max_daily_sends: 30
+    require_approval: true
+    send_to_risky: false
+    max_bounce_rate: 0.05
+  linkedin:
+    enabled: false      # LinkedIn automation breaks LinkedIn's terms; off by default
+    max_daily_connections: 20
+    max_daily_messages: 10
+
+usage:
+  max_daily_claude_percent: 40   # two Harvey instances share one Claude plan
+  heartbeat_interval_minutes: 15
+  quiet_hours:
+    start: "22:00"
+    end: "07:00"
+    timezone: "Asia/Kolkata"     # TODO: your timezone
