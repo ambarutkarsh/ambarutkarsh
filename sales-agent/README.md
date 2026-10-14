@@ -5,7 +5,7 @@ web, finds and verifies their work email, writes a personalised email sequence, 
 you approve it, reads replies, and drafts the response. It thinks with Claude Code, so it runs
 on your Claude subscription with no API bill.
 
-Built from scratch for these two products, with about 1,200 lines of Python and two
+Built from scratch for these two products, with about 1,500 lines of Python and two
 dependencies. No dependence on Harvey or anyone else's code.
 
 ## How it works
